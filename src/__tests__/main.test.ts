@@ -78,6 +78,14 @@ describe("QueryParamSerializer", () => {
             });
             expect(result).toBe("?name=test&count=5&active=true&tags=a&tags=b");
         });
+
+        test("handles empty arrays", () => {
+            const result = defaultQueryParamSerializer.serialize({
+                name: "test",
+                tags: [],
+            });
+            expect(result).toBe("?name=test");
+        });
     });
 
     describe("first parameter", () => {
@@ -92,10 +100,45 @@ describe("QueryParamSerializer", () => {
         });
     });
 
+    describe("input validation", () => {
+        test("throws TypeError for null params", () => {
+            expect(() => defaultQueryParamSerializer.serialize(null as any)).toThrow(TypeError);
+        });
+
+        test("throws TypeError for undefined params", () => {
+            expect(() => defaultQueryParamSerializer.serialize(undefined as any)).toThrow(TypeError);
+        });
+
+        test("throws TypeError for array params", () => {
+            expect(() => defaultQueryParamSerializer.serialize([] as any)).toThrow(TypeError);
+        });
+
+        test("throws TypeError for primitive params", () => {
+            expect(() => defaultQueryParamSerializer.serialize("string" as any)).toThrow(TypeError);
+            expect(() => defaultQueryParamSerializer.serialize(123 as any)).toThrow(TypeError);
+        });
+    });
+
     describe("error handling", () => {
         test("throws MissingRenderer for unsupported types", () => {
-            const serializer = new QueryParamSerializer([] as any);
+            const serializer = new QueryParamSerializer([]);
             expect(() => serializer.serialize({ value: "test" })).toThrow(MissingRenderer);
+        });
+
+        test("throws MissingRenderer for symbols", () => {
+            expect(() => defaultQueryParamSerializer.serialize({ sym: Symbol("test") })).toThrow(MissingRenderer);
+        });
+
+        test("throws MissingRenderer for functions", () => {
+            expect(() => defaultQueryParamSerializer.serialize({ fn: () => {} })).toThrow(MissingRenderer);
+        });
+
+        test("throws MissingRenderer for invalid dates", () => {
+            expect(() => defaultQueryParamSerializer.serialize({ date: new Date("invalid") })).toThrow(MissingRenderer);
+        });
+
+        test("throws MissingRenderer for arrays with unsupported types", () => {
+            expect(() => defaultQueryParamSerializer.serialize({ arr: [true, false] })).toThrow(MissingRenderer);
         });
     });
 });

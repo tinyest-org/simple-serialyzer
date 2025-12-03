@@ -17,10 +17,12 @@ import { defaultQueryParamSerializer } from '@petite-org/simple-serialyzer';
 
 const url = defaultQueryParamSerializer.serialize({
     name: "Hello",
-    arr: [1, 2, 3],
+    count: 42,
+    active: true,
+    tags: ["a", "b"],
     date: new Date(),
 });
-// -> ?name=Hello&arr=1&arr=2&arr=3&date=03-12-2025
+// -> ?name=Hello&count=42&active=true&tags=a&tags=b&date=03-12-2025
 ```
 
 ## Custom Configuration
@@ -31,18 +33,16 @@ Create your own serializer with specific handlers:
 import {
     QueryParamSerializer,
     PrimitiveSerializer,
+    BooleanSerializer,
     DateSerializer,
     PrimitiveArraySerializer,
-    EmptySerializer,
 } from '@petite-org/simple-serialyzer';
 
-const primitiveSerializer = new PrimitiveSerializer();
-
 const querySerializer = new QueryParamSerializer([
-    primitiveSerializer,
+    new PrimitiveSerializer(),
+    new BooleanSerializer(),
     new DateSerializer(),
-    new PrimitiveArraySerializer(primitiveSerializer),
-    new EmptySerializer(),
+    new PrimitiveArraySerializer(),
 ]);
 
 const url = querySerializer.serialize({
@@ -57,23 +57,19 @@ const url = querySerializer.serialize({
 Implement the `ValueSerializer` interface to handle custom types:
 
 ```ts
-import { ValueSerializer } from '@petite-org/simple-serialyzer';
+import { ValueSerializer, KeyValuePair } from '@petite-org/simple-serialyzer';
 
 class User {
     constructor(public id: number, public name: string) {}
 }
 
 class UserSerializer implements ValueSerializer<User> {
-    shouldSerialize(value: any): boolean {
+    canSerialize(value: unknown): value is User {
         return value instanceof User;
     }
 
-    serialize(value: User, _key: string): string {
-        return encodeURIComponent(`${value.id}:${value.name}`);
-    }
-
-    updateKey(_key: string): string | false {
-        return false; // keep original key
+    serialize(value: User, key: string): KeyValuePair[] {
+        return [{ key, value: encodeURIComponent(`${value.id}:${value.name}`) }];
     }
 }
 
@@ -91,9 +87,9 @@ const querySerializer = new QueryParamSerializer([
 |------------|---------|--------|
 | `PrimitiveSerializer` | strings, numbers | URI-encoded value |
 | `BooleanSerializer` | booleans | `"true"` or `"false"` |
-| `DateSerializer` | Date objects | `DD-MM-YYYY` format |
-| `PrimitiveArraySerializer` | string[], number[] | Repeated keys: `key=1&key=2` |
-| `EmptySerializer` | null, undefined | Empty string |
+| `DateSerializer` | valid Date objects | `DD-MM-YYYY` format |
+| `PrimitiveArraySerializer` | (string \| number)[] | Multiple pairs: `key=1&key=2` |
+| `EmptySerializer` | null, undefined | Skipped (empty array) |
 
 ## API
 
@@ -103,6 +99,21 @@ const querySerializer = new QueryParamSerializer([
 - `first`: If `true` (default), prepends `?`; if `false`, prepends `&`
 
 Returns the serialized query string.
+
+**Throws:**
+- `TypeError` if params is not an object
+- `MissingRenderer` if no serializer can handle a value (including invalid dates)
+
+### `ValueSerializer<T>` Interface
+
+```ts
+interface ValueSerializer<T> {
+    canSerialize(value: unknown): value is T;
+    serialize(value: T, key: string): KeyValuePair[];
+}
+
+type KeyValuePair = { key: string; value: string };
+```
 
 ## License
 

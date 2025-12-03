@@ -1,47 +1,44 @@
-import { ValueSerializer, Params, ArrayType, MissingRenderer } from "./interface";
+import { ValueSerializer, KeyValuePair, MissingRenderer } from "./interface";
 
-export class QueryParamSerializer<T extends ValueSerializer<any>[]> {
-  private serializers: T;
+export class QueryParamSerializer<T extends ValueSerializer<unknown>[]> {
+    private serializers: T;
 
-  constructor(serializers: T) {
-    this.serializers = serializers;
-  }
-
-  /**
-   * 
-   * @param params Items to serialyze
-   * @param first Is it the first part of the url ? or are there previous params already ?
-   * @returns the formated string
-   */
-  serialize(params: Params<ArrayType<T>>, first: boolean = true) {
-    const s = Object.keys(params).map(key => {
-      const value = params[key];
-      if (value !== undefined && value !== null) {
-        // if we could create custom serializers at compile time it would be more optimized
-        const serializer = this.serializers.find(s => s.shouldSerialize(value));
-        if (serializer) {
-          const serialized = serializer.serialize(value, key);
-          const updated = serializer.updateKey(key);
-          if (updated === "" ) {
-            // Serializer handled its own key format (e.g., arrays)
-            return serialized;
-          }
-          const k = updated === false ? key : updated;
-          return `${k}=${serialized}`;
-        } else {
-          throw new MissingRenderer(`Missing serializer for "${value}"`);
-        }
-      }
-      return null;
-    }).filter((v): v is string => v !== null);
-    if (s.length > 0) {
-      if (first) {
-        return `?${s.join("&")}`;
-      } else {
-        return `&${s.join("&")}`;
-      }
-    } else {
-      return "";
+    constructor(serializers: T) {
+        this.serializers = serializers;
     }
-  }
+
+    /**
+     * Serialize an object to a query string.
+     * @param params - Object with values to serialize
+     * @param first - If true (default), prepends "?"; if false, prepends "&"
+     * @returns The formatted query string
+     * @throws {TypeError} If params is not an object
+     * @throws {MissingRenderer} If no serializer can handle a value
+     */
+    serialize(params: Record<string, unknown>, first: boolean = true): string {
+        if (params == null || typeof params !== "object" || Array.isArray(params)) {
+            throw new TypeError("params must be a non-null object");
+        }
+
+        const pairs: KeyValuePair[] = Object.entries(params).flatMap(([key, value]) => {
+            // Skip null/undefined by default
+            if (value === undefined || value === null) {
+                return [];
+            }
+
+            const serializer = this.serializers.find(s => s.canSerialize(value));
+            if (!serializer) {
+                throw new MissingRenderer(`No serializer for value of type: ${typeof value}`);
+            }
+
+            return serializer.serialize(value, key);
+        });
+
+        if (pairs.length === 0) {
+            return "";
+        }
+
+        const queryString = pairs.map(p => `${p.key}=${p.value}`).join("&");
+        return first ? `?${queryString}` : `&${queryString}`;
+    }
 }

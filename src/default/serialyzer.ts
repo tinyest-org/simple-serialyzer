@@ -4,14 +4,12 @@ import { PrimitiveSerializer, EmptySerializer } from "./basic";
 import { BooleanSerializer } from "./boolean";
 import { DateSerializer } from "./date";
 
-const primitiveSerializer = new PrimitiveSerializer();
-
 const defaultQueryParamSerializer = new QueryParamSerializer([
-  primitiveSerializer,
-  new BooleanSerializer(),
-  new DateSerializer(),
-  new PrimitiveArraySerializer(primitiveSerializer),
-  new EmptySerializer(),
+    new PrimitiveSerializer(),
+    new BooleanSerializer(),
+    new DateSerializer(),
+    new PrimitiveArraySerializer(),
+    new EmptySerializer(),
 ]);
 
 export default defaultQueryParamSerializer;

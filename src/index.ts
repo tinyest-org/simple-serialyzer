@@ -6,9 +6,14 @@ import { QueryParamSerializer } from './main';
 import { MissingRenderer } from './interface';
 import defaultQueryParamSerializer from './default/serialyzer';
 
-export type { ValueSerializer } from './interface';
+export type { ValueSerializer, KeyValuePair } from './interface';
 export {
-    MissingRenderer, PrimitiveArraySerializer,
-    EmptySerializer, PrimitiveSerializer, QueryParamSerializer, DateSerializer,
-    BooleanSerializer, defaultQueryParamSerializer
-}
+    MissingRenderer,
+    PrimitiveArraySerializer,
+    EmptySerializer,
+    PrimitiveSerializer,
+    QueryParamSerializer,
+    DateSerializer,
+    BooleanSerializer,
+    defaultQueryParamSerializer,
+};

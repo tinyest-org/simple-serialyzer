@@ -1,13 +1,11 @@
-import { ValueSerializer } from "../interface";
+import { ValueSerializer, KeyValuePair } from "../interface";
 
 export class BooleanSerializer implements ValueSerializer<boolean> {
-    shouldSerialize(value: any): boolean {
+    canSerialize(value: unknown): value is boolean {
         return typeof value === "boolean";
     }
-    serialize(value: boolean, _key: string): string {
-        return value ? "true" : "false";
-    }
-    updateKey(_key: string): string | false {
-        return false;
+
+    serialize(value: boolean, key: string): KeyValuePair[] {
+        return [{ key, value: value ? "true" : "false" }];
     }
 }

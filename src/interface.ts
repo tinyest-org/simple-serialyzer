@@ -1,26 +1,41 @@
-
-export interface ValueSerializer<T> {
-    /**
-     *
-     * @param value to check this Serialiezer should handle it
-     */
-    shouldSerialize(value: any): boolean;
-    /**
-     * If the returned value should be URIComponent encoded then, it should be done in the serialize function
-     * @param value
-     * @param key
-     */
-    serialize(value: T, key: string): string;
-    updateKey(key: string): string | false;
-}
-
-export type ValueSerializerType<T> = T extends ValueSerializer<infer U> ? U : T;
-
-export type Params<T> = {
-    [key: string]: ValueSerializerType<T>;
+/**
+ * A key-value pair for query parameters
+ */
+export type KeyValuePair = {
+    key: string;
+    value: string;
 };
 
-export type ArrayType<T> = T extends Array<infer U> ? U : T;
+/**
+ * Interface for custom value serializers.
+ * Implement this to add support for new types.
+ */
+export interface ValueSerializer<T> {
+    /**
+     * Type guard that checks if this serializer can handle the given value.
+     * @param value - The value to check
+     * @returns true if this serializer handles this value type
+     */
+    canSerialize(value: unknown): value is T;
 
-export class MissingRenderer extends Error { }
+    /**
+     * Serialize the value to key-value pairs.
+     * @param value - The value to serialize (guaranteed to pass canSerialize)
+     * @param key - The parameter key
+     * @returns Array of key-value pairs:
+     *   - Single values: [{key, value}]
+     *   - Arrays: [{key, value}, {key, value}, ...]
+     *   - Skip (null/undefined): []
+     */
+    serialize(value: T, key: string): KeyValuePair[];
+}
 
+/**
+ * Error thrown when no serializer can handle a value
+ */
+export class MissingRenderer extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'MissingRenderer';
+    }
+}
