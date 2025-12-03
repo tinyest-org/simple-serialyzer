@@ -16,19 +16,24 @@ export class QueryParamSerializer<T extends ValueSerializer<any>[]> {
   serialize(params: Params<ArrayType<T>>, first: boolean = true) {
     const s = Object.keys(params).map(key => {
       const value = params[key];
-      if (value) {
+      if (value !== undefined && value !== null) {
         // if we could create custom serializers at compile time it would be more optimized
         const serializer = this.serializers.find(s => s.shouldSerialize(value));
         if (serializer) {
           const serialized = serializer.serialize(value, key);
           const updated = serializer.updateKey(key);
+          if (updated === "" ) {
+            // Serializer handled its own key format (e.g., arrays)
+            return serialized;
+          }
           const k = updated === false ? key : updated;
           return `${k}=${serialized}`;
         } else {
           throw new MissingRenderer(`Missing serializer for "${value}"`);
         }
       }
-    });
+      return null;
+    }).filter((v): v is string => v !== null);
     if (s.length > 0) {
       if (first) {
         return `?${s.join("&")}`;

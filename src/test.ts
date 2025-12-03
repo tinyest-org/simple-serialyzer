@@ -1,8 +1,0 @@
-
-
-const test = () => {
-
-}
-
-
-export { test };
