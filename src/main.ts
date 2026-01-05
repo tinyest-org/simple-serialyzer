@@ -1,7 +1,7 @@
-import { ValueSerializer, KeyValuePair, MissingRenderer } from "./interface";
+import { ValueSerializer, KeyValuePair, MissingRenderer, ExtractSerializedTypes } from "./interface";
 
-export class QueryParamSerializer<T extends ValueSerializer<unknown>[]> {
-    private serializers: T;
+export class QueryParamSerializer<T extends readonly ValueSerializer<unknown>[]> {
+    private readonly serializers: T;
 
     constructor(serializers: T) {
         this.serializers = serializers;
@@ -15,7 +15,7 @@ export class QueryParamSerializer<T extends ValueSerializer<unknown>[]> {
      * @throws {TypeError} If params is not an object
      * @throws {MissingRenderer} If no serializer can handle a value
      */
-    serialize(params: Record<string, unknown>, first: boolean = true): string {
+    serialize(params: Record<string, ExtractSerializedTypes<T>>, first: boolean = true): string {
         if (params == null || typeof params !== "object" || Array.isArray(params)) {
             throw new TypeError("params must be a non-null object");
         }

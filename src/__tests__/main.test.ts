@@ -122,14 +122,17 @@ describe("QueryParamSerializer", () => {
     describe("error handling", () => {
         test("throws MissingRenderer for unsupported types", () => {
             const serializer = new QueryParamSerializer([]);
+            // @ts-expect-error - empty serializer array means no types are supported
             expect(() => serializer.serialize({ value: "test" })).toThrow(MissingRenderer);
         });
 
         test("throws MissingRenderer for symbols", () => {
+            // @ts-expect-error - symbols are not supported
             expect(() => defaultQueryParamSerializer.serialize({ sym: Symbol("test") })).toThrow(MissingRenderer);
         });
 
         test("throws MissingRenderer for functions", () => {
+            // @ts-expect-error - functions are not supported
             expect(() => defaultQueryParamSerializer.serialize({ fn: () => {} })).toThrow(MissingRenderer);
         });
 
@@ -138,6 +141,7 @@ describe("QueryParamSerializer", () => {
         });
 
         test("throws MissingRenderer for arrays with unsupported types", () => {
+            // @ts-expect-error - boolean arrays are not supported
             expect(() => defaultQueryParamSerializer.serialize({ arr: [true, false] })).toThrow(MissingRenderer);
         });
     });

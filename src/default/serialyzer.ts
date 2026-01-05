@@ -1,7 +1,6 @@
 import { QueryParamSerializer } from "../main";
 import { PrimitiveArraySerializer } from "./array";
-import { PrimitiveSerializer, EmptySerializer } from "./basic";
-import { BooleanSerializer } from "./boolean";
+import { PrimitiveSerializer, EmptySerializer, BooleanSerializer } from "./basic";
 import { DateSerializer } from "./date";
 
 const defaultQueryParamSerializer = new QueryParamSerializer([
@@ -10,6 +9,6 @@ const defaultQueryParamSerializer = new QueryParamSerializer([
     new DateSerializer(),
     new PrimitiveArraySerializer(),
     new EmptySerializer(),
-]);
+] as const);
 
 export default defaultQueryParamSerializer;

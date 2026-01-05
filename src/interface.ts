@@ -39,3 +39,14 @@ export class MissingRenderer extends Error {
         this.name = 'MissingRenderer';
     }
 }
+
+/**
+ * Extract the type T from ValueSerializer<T>
+ */
+export type ExtractSerializedType<S> = S extends ValueSerializer<infer T> ? T : never;
+
+/**
+ * Extract union of all serialized types from an array of serializers
+ */
+export type ExtractSerializedTypes<S extends readonly ValueSerializer<unknown>[]> =
+    ExtractSerializedType<S[number]>;

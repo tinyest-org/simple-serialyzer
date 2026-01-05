@@ -1,6 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { PrimitiveSerializer, EmptySerializer } from "../default/basic";
-import { BooleanSerializer } from "../default/boolean";
+import { PrimitiveSerializer, EmptySerializer, BooleanSerializer } from "../default/basic";
 import { DateSerializer } from "../default/date";
 import { PrimitiveArraySerializer } from "../default/array";
 
